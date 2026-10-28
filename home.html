@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PestiCalc Pro - Rentokil Initial Internal Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    
+    @media print {
+      .no-print { display: none !important; }
+      .print-only { display: block !important; }
+      body { background-color: white; color: black; }
+      .card-shadow { box-shadow: none !important; border: 1px solid #cbd5e1; }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col antialiased">
+
+  <!-- Header / Navbar -->
+  <header class="bg-emerald-800 text-white shadow-lg sticky top-0 z-50 no-print">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex justify-between items-center">
+      <div class="flex items-center space-x-3">
+        <div class="bg-emerald-900 p-2 rounded-xl border border-emerald-700 shadow-inner">
+          <i class="fa-solid fa-flask-vial text-2xl text-emerald-300"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="font-extrabold text-lg sm:text-xl leading-tight tracking-wide">PestiCalc Pro</h1>
+            <span class="hidden sm:inline-block bg-emerald-700/80 text-emerald-200 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-600">Rentokil Internal</span>
+          </div>
+          <p class="text-xs text-emerald-200">Kalkulator Formulasi & Dosis Pestisida Operasional</p>
+        </div>
+      </div>
+      
+      <!-- User Status & Actions -->
+      <div class="flex items-center space-x-2 sm:space-x-3">
+        
+        <!-- Tombol Super Admin (Hanya tampil jika akun adalah superadmin) -->
+        <div id="adminPanelBtn" class="hidden">
+          <a href="admin_rev.html" class="bg-amber-500 hover:bg-amber-600 text-slate-900 text-xs sm:text-sm px-3 py-2 rounded-xl font-bold transition flex items-center gap-1.5 shadow-sm">
+            <i class="fa-solid fa-shield-halved"></i>
+            <span class="hidden sm:inline">Panel Super Admin</span>
+          </a>
+        </div>
+
+        <div class="hidden md:flex items-center bg-emerald-900/80 border border-emerald-700/70 rounded-xl px-3 py-1.5 text-xs">
+          <i class="fa-solid fa-circle-user text-emerald-400 mr-2 text-sm"></i>
+          <span id="headerUserEmail" class="font-semibold text-emerald-100 truncate max-w-[180px]">teknisi@rentokil-initial.com</span>
+        </div>
+
+        <button onclick="resetCalculator()" title="Reset semua angka input" class="bg-emerald-900 hover:bg-emerald-700 text-xs sm:text-sm px-3 py-2 rounded-xl font-medium transition flex items-center gap-1.5 border border-emerald-700 shadow-sm">
+          <i class="fa-solid fa-rotate-right"></i>
+          <span class="hidden sm:inline">Reset</span>
+        </button>
+
+        <button onclick="handleLogout()" title="Keluar dari sesi portal" class="bg-rose-700/90 hover:bg-rose-600 text-xs sm:text-sm px-3 py-2 rounded-xl font-medium transition flex items-center gap-1.5 border border-rose-600 shadow-sm text-white">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i>
+          <span class="hidden sm:inline">Keluar</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- Notification Toast -->
+    <div id="toast" class="hidden fixed bottom-5 right-5 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl z-50 flex items-center space-x-3 border border-slate-700 transition-all duration-300">
+      <i class="fa-solid fa-circle-check text-emerald-400 text-lg" id="toast-icon"></i>
+      <span id="toast-message" class="text-sm font-medium">Notifikasi</span>
+    </div>
+
+    <!-- Top Control Bar: Search & Select Pestisida -->
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-6 card-shadow space-y-4">
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+        <div class="md:col-span-4">
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+            <i class="fa-solid fa-filter text-emerald-600 mr-1"></i> Kategori Metode
+          </label>
+          <select id="categorySelect" onchange="filterPesticides()" class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 p-2.5 outline-none transition font-semibold">
+            <option value="ALL">-- Semua Kategori Metode --</option>
+            <option value="GEL_BAITING_TABUR">1. Gel / Baiting / Umpan / Tabur</option>
+            <option value="SPRAYING_RESIDUAL">2. Spraying & Residual Spray</option>
+            <option value="THERMAL_FOGGING">3. Thermal Fogging (Pengasapan)</option>
+          </select>
+        </div>
+
+        <div class="md:col-span-3">
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+            <i class="fa-solid fa-magnifying-glass text-emerald-600 mr-1"></i> Cari Merk / Produk
+          </label>
+          <div class="relative">
+            <input type="text" id="searchInput" oninput="filterPesticides()" placeholder="Cari: Provecta, Temprid, Solfac..." class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 p-2.5 pr-8 outline-none font-medium">
+            <i class="fa-solid fa-xmark absolute right-3 top-3 text-slate-400 cursor-pointer hover:text-slate-600 text-xs hidden" id="clearSearchBtn" onclick="clearSearch()"></i>
+          </div>
+        </div>
+
+        <div class="md:col-span-5">
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+            <i class="fa-solid fa-spray-can text-emerald-600 mr-1"></i> Pilih Produk & Metode Dosis
+          </label>
+          <select id="pesticideSelect" onchange="onPesticideChange()" class="w-full bg-emerald-50/50 border border-emerald-300 text-slate-900 text-sm rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 p-2.5 outline-none transition font-bold">
+          </select>
+        </div>
+      </div>
+
+      <!-- Standard Reference Banner -->
+      <div id="standardInfoCard" class="p-4 rounded-xl bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 flex flex-col md:flex-row md:items-center justify-between gap-3 text-emerald-950">
+        <div class="flex items-start space-x-3">
+          <div class="p-2.5 bg-emerald-600 text-white rounded-xl shrink-0 mt-0.5 shadow-sm">
+            <i class="fa-solid fa-shield-halved text-lg"></i>
+          </div>
+          <div>
+            <div class="font-extrabold text-sm sm:text-base flex items-center gap-2" id="stdPesticideName">
+              Nama Pestisida
+            </div>
+            <p class="text-xs text-emerald-800 font-medium mt-0.5" id="stdDosisDescription">Deskripsi dosis standar acuan pabrik / instruksi lapangan</p>
+          </div>
+        </div>
+        <div class="flex flex-wrap gap-2 text-xs font-bold shrink-0">
+          <span class="bg-white border border-emerald-300 text-emerald-800 px-3 py-1.5 rounded-lg shadow-sm" id="stdRatioBadge">
+            Rasio: -
+          </span>
+          <span class="bg-white border border-emerald-300 text-emerald-800 px-3 py-1.5 rounded-lg shadow-sm" id="stdAreaBadge">
+            Cakupan Standar: -
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mode Input Selection & Interactive Calculator Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+      <!-- Left Panel: Input Modes -->
+      <div class="lg:col-span-5 bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6 space-y-5 card-shadow flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+            <h2 class="font-bold text-slate-800 text-base flex items-center gap-2">
+              <i class="fa-solid fa-sliders text-emerald-600"></i> Pilih Mode Parameter Input
+            </h2>
+            <span class="text-xs font-semibold bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full">3-Way Auto Calculator</span>
+          </div>
+
+          <div class="space-y-2 mb-5">
+            <label class="flex items-center p-3 rounded-xl border border-slate-200 hover:border-emerald-400 cursor-pointer transition bg-slate-50/50 has-[:checked]:bg-emerald-50 has-[:checked]:border-emerald-500">
+              <input type="radio" name="calcMode" value="AREA" checked onchange="switchMode('AREA')" class="w-4 h-4 text-emerald-600 focus:ring-emerald-500 border-slate-300">
+              <div class="ml-3">
+                <span class="block text-xs font-bold text-slate-800">Mode A: Luas Area Target (m² / Ha)</span>
+                <span class="block text-[11px] text-slate-500">Hitung kebutuhan chemical & pelarut dari luasan</span>
+              </div>
+            </label>
+
+            <label class="flex items-center p-3 rounded-xl border border-slate-200 hover:border-emerald-400 cursor-pointer transition bg-slate-50/50 has-[:checked]:bg-emerald-50 has-[:checked]:border-emerald-500">
+              <input type="radio" name="calcMode" value="CHEMICAL" onchange="switchMode('CHEMICAL')" class="w-4 h-4 text-emerald-600 focus:ring-emerald-500 border-slate-300">
+              <div class="ml-3">
+                <span class="block text-xs font-bold text-slate-800">Mode B: Stok Pestisida Mentah (g / ml)</span>
+                <span class="block text-[11px] text-slate-500">Hitung pelarut yang dibutuhkan & luasan maksimal</span>
+              </div>
+            </label>
+
+            <label id="modeSolventOption" class="flex items-center p-3 rounded-xl border border-slate-200 hover:border-emerald-400 cursor-pointer transition bg-slate-50/50 has-[:checked]:bg-emerald-50 has-[:checked]:border-emerald-500">
+              <input type="radio" name="calcMode" value="SOLVENT" onchange="switchMode('SOLVENT')" class="w-4 h-4 text-emerald-600 focus:ring-emerald-500 border-slate-300">
+              <div class="ml-3">
+                <span class="block text-xs font-bold text-slate-800">Mode C: Volume Air / Pelarut (ml / L)</span>
+                <span class="block text-[11px] text-slate-500">Hitung takaran chemical & luasan tercover</span>
+              </div>
+            </label>
+          </div>
+
+          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-4">
+            <div id="inputGroupArea" class="space-y-3">
+              <label class="block text-xs font-bold text-slate-700">Masukkan Luas Area Target</label>
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-[11px] text-slate-500 mb-1">Luas (m²)</label>
+                  <div class="relative">
+                    <input type="number" id="inputAreaM2" min="0" step="any" placeholder="0" oninput="calculateFromArea('m2')" class="w-full bg-white border border-slate-300 rounded-lg p-2.5 text-sm font-bold outline-none focus:ring-2 focus:ring-emerald-500 pr-8">
+                    <span class="absolute right-2.5 top-2.5 text-xs text-slate-400 font-medium">m²</span>
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-[11px] text-slate-500 mb-1">Luas (Hektar)</label>
+                  <div class="relative">
+                    <input type="number" id="inputAreaHa" min="0" step="any" placeholder="0" oninput="calculateFromArea('ha')" class="w-full bg-white border border-slate-300 rounded-lg p-2.5 text-sm font-bold outline-none focus:ring-2 focus:ring-emerald-500 pr-8">
+                    <span class="absolute right-2.5 top-2.5 text-xs text-slate-400 font-medium">Ha</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div id="inputGroupChemical" class="space-y-3 hidden">
+              <label class="block text-xs font-bold text-slate-700">Masukkan Jumlah Stok Pestisida Mentah</label>
+              <div class="relative">
+                <input type="number" id="inputChemical" min="0" step="any" placeholder="0" oninput="calculateFromChemical()" class="w-full bg-white border border-slate-300 rounded-lg p-2.5 text-sm font-bold outline-none focus:ring-2 focus:ring-emerald-500 pr-14">
+                <span class="absolute right-3 top-2.5 text-xs text-slate-600 font-extrabold" id="unitChemicalLabel">gram</span>
+              </div>
+            </div>
+
+            <div id="inputGroupSolvent" class="space-y-3 hidden">
+              <label class="block text-xs font-bold text-slate-700">Masukkan Volume Air / Pelarut Disiapkan</label>
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-[11px] text-slate-500 mb-1">Volume (ml)</label>
+                  <div class="relative">
+                    <input type="number" id="inputSolventMl" min="0" step="any" placeholder="0" oninput="calculateFromSolvent('ml')" class="w-full bg-white border border-slate-300 rounded-lg p-2.5 text-sm font-bold outline-none focus:ring-2 focus:ring-emerald-500 pr-8">
+                    <span class="absolute right-2.5 top-2.5 text-xs text-slate-400 font-medium">ml</span>
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-[11px] text-slate-500 mb-1">Volume (Liter)</label>
+                  <div class="relative">
+                    <input type="number" id="inputSolventL" min="0" step="any" placeholder="0" oninput="calculateFromSolvent('l')" class="w-full bg-white border border-slate-300 rounded-lg p-2.5 text-sm font-bold outline-none focus:ring-2 focus:ring-emerald-500 pr-8">
+                    <span class="absolute right-2.5 top-2.5 text-xs text-slate-400 font-medium">L</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="text-xs text-slate-400 text-center pt-2 italic">
+          * Perhitungan otomatis menyesuaikan ketetapan rasio produk resmi.
+        </div>
+      </div>
+
+      <!-- Right Panel: Results Grid -->
+      <div class="lg:col-span-7 bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6 space-y-5 card-shadow flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+            <h2 class="font-bold text-slate-800 text-base flex items-center gap-2">
+              <i class="fa-solid fa-calculator text-emerald-600"></i> Hasil Formulasi Lapangan
+            </h2>
+            <span class="text-xs font-extrabold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-lg" id="calculationMethodTag">Mode: Luas Area</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+            <div class="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 p-4 rounded-xl">
+              <div class="text-xs font-bold text-amber-800 uppercase tracking-wider mb-1 flex items-center justify-between">
+                <span><i class="fa-solid fa-box-archive text-amber-600 mr-1"></i> Pestisida Mentah</span>
+                <span class="text-[10px] bg-amber-200 text-amber-900 px-1.5 py-0.5 rounded font-bold" id="cardChemUnitTag">Gram</span>
+              </div>
+              <div class="text-2xl font-black text-amber-950" id="resChemicalVal">0</div>
+              <div class="text-xs font-medium text-amber-700 mt-1" id="resChemicalSub">-</div>
+            </div>
+
+            <div class="bg-gradient-to-br from-blue-50 to-sky-50 border border-blue-200 p-4 rounded-xl" id="resSolventCard">
+              <div class="text-xs font-bold text-blue-800 uppercase tracking-wider mb-1 flex items-center justify-between">
+                <span><i class="fa-solid fa-droplet text-blue-600 mr-1"></i> Air / Pelarut</span>
+                <span class="text-[10px] bg-blue-200 text-blue-900 px-1.5 py-0.5 rounded font-bold">Pelarut</span>
+              </div>
+              <div class="text-2xl font-black text-blue-950" id="resSolventVal">0</div>
+              <div class="text-xs font-medium text-blue-700 mt-1" id="resSolventSub">-</div>
+            </div>
+
+            <div class="bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200 p-4 rounded-xl" id="resSolutionCard">
+              <div class="text-xs font-bold text-emerald-800 uppercase tracking-wider mb-1 flex items-center justify-between">
+                <span><i class="fa-solid fa-vial text-emerald-600 mr-1"></i> Total Formulasi Larutan</span>
+                <span class="text-[10px] bg-emerald-200 text-emerald-900 px-1.5 py-0.5 rounded font-bold">Ready Use</span>
+              </div>
+              <div class="text-2xl font-black text-emerald-950" id="resSolutionVal">0</div>
+              <div class="text-xs font-medium text-emerald-700 mt-1" id="resSolutionSub">-</div>
+            </div>
+
+            <div class="bg-gradient-to-br from-purple-50 to-indigo-50 border border-purple-200 p-4 rounded-xl">
+              <div class="text-xs font-bold text-purple-800 uppercase tracking-wider mb-1 flex items-center justify-between">
+                <span><i class="fa-solid fa-vector-square text-purple-600 mr-1"></i> Luasan Tercover</span>
+                <span class="text-[10px] bg-purple-200 text-purple-900 px-1.5 py-0.5 rounded font-bold">m² / Ha</span>
+              </div>
+              <div class="text-2xl font-black text-purple-950" id="resAreaVal">0</div>
+              <div class="text-xs font-medium text-purple-700 mt-1" id="resAreaSub">0 Hektar</div>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto rounded-xl border border-slate-200">
+            <table class="w-full text-left text-xs text-slate-700">
+              <thead class="bg-slate-100 text-slate-600 font-bold uppercase tracking-wider border-b border-slate-200">
+                <tr>
+                  <th class="p-3">Komponen</th>
+                  <th class="p-3">Dosis Acuan Standar</th>
+                  <th class="p-3">Kebutuhan Hasil Perhitungan</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-200 bg-white font-medium">
+                <tr>
+                  <td class="p-3 font-semibold text-slate-800">Bahan Aktif / Chemical</td>
+                  <td class="p-3" id="tbStdChemical">-</td>
+                  <td class="p-3 font-extrabold text-amber-700" id="tbCalcChemical">-</td>
+                </tr>
+                <tr id="rowTbSolvent">
+                  <td class="p-3 font-semibold text-slate-800">Pelarut (Air / Oil)</td>
+                  <td class="p-3" id="tbStdSolvent">-</td>
+                  <td class="p-3 font-extrabold text-blue-700" id="tbCalcSolvent">-</td>
+                </tr>
+                <tr>
+                  <td class="p-3 font-semibold text-slate-800">Cakupan Luasan Area</td>
+                  <td class="p-3" id="tbStdArea">-</td>
+                  <td class="p-3 font-extrabold text-purple-700" id="tbCalcArea">-</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3 pt-4 border-t border-slate-100 no-print">
+          <button onclick="copyWAFormat()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-bold py-3 px-4 rounded-xl transition flex items-center justify-center gap-2 shadow-md">
+            <i class="fa-brands fa-whatsapp text-lg"></i>
+            <span>Salin Ringkasan WA</span>
+          </button>
+          <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-900 text-white text-xs sm:text-sm font-bold py-3 px-4 rounded-xl transition flex items-center justify-center gap-2 shadow-md">
+            <i class="fa-solid fa-print"></i>
+            <span>Cetak Laporan</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Section 2: Fogging Solvent Mixture Ratio (Dexlite : Pertamax) -->
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6 card-shadow no-print">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-3 mb-4 gap-2">
+        <div>
+          <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
+            <i class="fa-solid fa-gas-pump text-amber-600"></i> Kalkulator Campuran Pelarut Fogging (Dexlite : Pertamax)
+          </h3>
+          <p class="text-xs text-slate-500">Hitung proporsi campuran pelarut minyak pengasapan Thermal Fogging (Rasio Standar 5 : 2)</p>
+        </div>
+        <span class="text-xs font-bold bg-amber-100 text-amber-800 px-3 py-1 rounded-full w-fit">Rasio 5 : 2</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-5 items-center">
+        <div class="md:col-span-5 space-y-2">
+          <label class="block text-xs font-bold text-slate-700">Total Kebutuhan Pelarut Minyak Fogging</label>
+          <div class="grid grid-cols-2 gap-3">
+            <div class="relative">
+              <input type="number" id="inputFogSolventL" min="0" step="any" placeholder="0" oninput="calcFogMixture('l')" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-sm font-bold outline-none focus:ring-2 focus:ring-amber-500 pr-8">
+              <span class="absolute right-3 top-3.5 text-xs text-slate-400 font-bold">Liter</span>
+            </div>
+            <div class="relative">
+              <input type="number" id="inputFogSolventMl" min="0" step="any" placeholder="0" oninput="calcFogMixture('ml')" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-sm font-bold outline-none focus:ring-2 focus:ring-amber-500 pr-8">
+              <span class="absolute right-3 top-3.5 text-xs text-slate-400 font-bold">ml</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="md:col-span-7 grid grid-cols-2 gap-3">
+          <div class="bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-center">
+            <div class="text-[11px] font-bold text-slate-500 uppercase">Dexlite / Solar (5 Bagian)</div>
+            <div class="text-lg font-black text-slate-800 mt-0.5" id="fogDexliteVal">0 L</div>
+            <div class="text-[11px] font-medium text-slate-400" id="fogDexliteSub">0 ml</div>
+          </div>
+          <div class="bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-center">
+            <div class="text-[11px] font-bold text-slate-500 uppercase">Pertamax / Bensin (2 Bagian)</div>
+            <div class="text-lg font-black text-slate-800 mt-0.5" id="fogPertamaxVal">0 L</div>
+            <div class="text-[11px] font-medium text-slate-400" id="fogPertamaxSub">0 ml</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 3: Reference Table -->
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6 card-shadow space-y-4">
+      <h3 class="font-bold text-slate-800 text-base flex items-center gap-2 border-b border-slate-100 pb-3">
+        <i class="fa-solid fa-book-bookmark text-emerald-600"></i> Ketentuan Acuan Formulasi Pestisida Lapangan
+      </h3>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+        <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200">
+          <div class="font-bold text-slate-800 mb-1.5 flex items-center gap-1.5">
+            <i class="fa-solid fa-spray-can text-emerald-600"></i> Spraying & Residual
+          </div>
+          <ul class="space-y-1 text-slate-600">
+            <li>• <strong>PROVECTA:</strong> SPI/Kecoa 1ml/500ml; Terbang 1ml/1000ml</li>
+            <li>• <strong>TEMPRID 365.4 SC:</strong> SPI/Kecoa 2ml/L; Semut/Lalat 10ml/5L (100m²)</li>
+            <li>• <strong>SOLFAC 10 WP:</strong> Kecoa 4g/L larutan</li>
+            <li>• <strong>ICON 25 EC:</strong> Spraying 10ml/L; Fogging Nyamuk 20ml/5L</li>
+          </ul>
+        </div>
+
+        <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200">
+          <div class="font-bold text-slate-800 mb-1.5 flex items-center gap-1.5">
+            <i class="fa-solid fa-bug text-emerald-600"></i> Serangga umum & Larva
+          </div>
+          <ul class="space-y-1 text-slate-600">
+            <li>• <strong>GRAB 150/75 SC:</strong> Lalat/Kecoa/Semut 0.5-2ml/L</li>
+            <li>• <strong>NEPOREX 2 WG:</strong> Larva Lalat 500g / 5L air / 20m²</li>
+            <li>• <strong>Agita Oles:</strong> 200g + 130ml Air = 80m² Lantai</li>
+            <li>• <strong>Agita Semprot:</strong> 200g + 1.300ml Air = 40m² Lantai</li>
+          </ul>
+        </div>
+
+        <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200">
+          <div class="font-bold text-slate-800 mb-1.5 flex items-center gap-1.5">
+            <i class="fa-solid fa-shield-cat text-emerald-600"></i> Rayap (Termiticide)
+          </div>
+          <ul class="space-y-1 text-slate-600">
+            <li>• <strong>PREMISE 200 SL:</strong> Rayap 12.5ml / 5L air / m²</li>
+            <li>• <strong>EXPOSE 55 SC:</strong> Rayap 5ml / 5L air / m²</li>
+            <li>• <strong>ALTRISET 200 SC:</strong> Rayap 2.5ml / L Larutan</li>
+            <li>• <strong>PRESTISE 200 SL:</strong> Spraying 10ml/5L/m²; Kayu 0.5-2ml/125ml/m²</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-slate-900 text-slate-400 text-xs py-6 border-t border-slate-800 no-print mt-auto">
+    <div class="max-w-7xl mx-auto px-4 text-center space-y-1">
+      <p class="font-bold text-slate-300">Pesticide Formulation Calculator Pro &copy; 2026</p>
+      <p class="text-slate-500">Rentokil Initial Internal Pest Control Operations System</p>
+    </div>
+  </footer>
+
+  <script>
+    const STORAGE_KEY_SESSION = 'rentokil_session';
+
+    // Verifikasi Sesi Home Screen
+    function verifyUserSession() {
+      const session = JSON.parse(localStorage.getItem(STORAGE_KEY_SESSION) || 'null');
+      if (!session) {
+        alert('Sesi Anda telah berakhir atau belum login. Mengalihkan ke login page...');
+        window.location.href = 'login_rev.html';
+        return null;
+      }
+
+      document.getElementById('headerUserEmail').textContent = session.email;
+      if (session.role === 'superadmin') {
+        document.getElementById('adminPanelBtn').classList.remove('hidden');
+      }
+      return session;
+    }
+
+    function handleLogout() {
+      if (confirm('Apakah Anda ingin keluar dari aplikasi?')) {
+        localStorage.removeItem(STORAGE_KEY_SESSION);
+        window.location.href = 'login_rev.html';
+      }
+    }
+
+    // DATABASE PESTISIDA
+    const DATABASE_PESTICIDES = [
+      { id: 'provecta_spi_kecoa', category: 'SPRAYING_RESIDUAL', name: 'Provecta (Spraying - SPI & Kecoa)', unit: 'ml', hasSolvent: true, stdChemical: 1, stdSolvent: 500, stdAreaM2: 10, desc: 'Dosis Standar: SPI dan Kecoa 1 ml / 500 ml larutan.' },
+      { id: 'provecta_terbang', category: 'SPRAYING_RESIDUAL', name: 'Provecta (Spraying - Serangga Terbang)', unit: 'ml', hasSolvent: true, stdChemical: 1, stdSolvent: 1000, stdAreaM2: 20, desc: 'Dosis Standar: Serangga Terbang 1 ml / 1000 ml (1 Liter) larutan.' },
+      { id: 'temprid_spi_kecoa', category: 'SPRAYING_RESIDUAL', name: 'TEMPRID 365.4 SC (Spraying - SPI & Kecoa)', unit: 'ml', hasSolvent: true, stdChemical: 2, stdSolvent: 1000, stdAreaM2: 20, desc: 'Dosis Standar: SPI dan Kecoa 2 ml / Liter larutan.' },
+      { id: 'temprid_semut_lalat', category: 'SPRAYING_RESIDUAL', name: 'TEMPRID 365.4 SC (Spraying - Semut & Lalat)', unit: 'ml', hasSolvent: true, stdChemical: 10, stdSolvent: 5000, stdAreaM2: 100, desc: 'Dosis Standar: Semut dan Lalat 10 ml / 5 Liter larutan = 100 m².' },
+      { id: 'solfac_10wp_kecoa', category: 'SPRAYING_RESIDUAL', name: 'SOLFAC 10 WP (Spraying - Kecoa)', unit: 'g', hasSolvent: true, stdChemical: 4, stdSolvent: 1000, stdAreaM2: 20, desc: 'Dosis Standar: Kecoa 4 gram / Liter larutan.' },
+      { id: 'neporex_2wg_larva', category: 'SPRAYING_RESIDUAL', name: 'NEPOREX 2 WG (Spraying - Larva Lalat Rumah)', unit: 'g', hasSolvent: true, stdChemical: 500, stdSolvent: 5000, stdAreaM2: 20, desc: 'Dosis Standar: Larva Lalat Rumah 500 gram / 5 Liter air / 20 m² permukaan manur.' },
+      { id: 'grab_spraying', category: 'SPRAYING_RESIDUAL', name: 'GRAB 150/75 SC (Spraying - Lalat, Kecoa, Semut)', unit: 'ml', hasSolvent: true, stdChemical: 1, stdSolvent: 1000, stdAreaM2: 20, desc: 'Dosis Standar: Lalat, Kecoa, Semut 0.5 - 2 ml / Liter larutan (Dosis rata-rata 1 ml/L).' },
+      { id: 'icon_25ec_spraying', category: 'SPRAYING_RESIDUAL', name: 'ICON 25 EC (Spraying - Lalat, Kecoa, Semut, Nyamuk)', unit: 'ml', hasSolvent: true, stdChemical: 10, stdSolvent: 1000, stdAreaM2: 20, desc: 'Dosis Standar: Lalat, Kecoa, Semut, Nyamuk 10 ml / Liter larutan.' },
+      { id: 'icon_25ec_fogging', category: 'THERMAL_FOGGING', name: 'ICON 25 EC (Thermal Fogging - Nyamuk)', unit: 'ml', hasSolvent: true, stdChemical: 2, stdSolvent: 5000, stdAreaM2: 1000, desc: 'Dosis Standar Thermal Fogging: Nyamuk 20 ml / 5 Liter larutan.' },
+      { id: 'premise_200sl_rayap', category: 'SPRAYING_RESIDUAL', name: 'PREMISE 200 SL (Spraying - Rayap)', unit: 'ml', hasSolvent: true, stdChemical: 12.5, stdSolvent: 5000, stdAreaM2: 1, desc: 'Dosis Standar: Rayap 12.5 ml / 5 Liter air / m².' },
+      { id: 'expose_55sc_rayap', category: 'SPRAYING_RESIDUAL', name: 'EXPOSE 55 SC (Spraying - Rayap)', unit: 'ml', hasSolvent: true, stdChemical: 5, stdSolvent: 5000, stdAreaM2: 1, desc: 'Dosis Standar: Rayap 5 ml / 5 Liter air / m².' },
+      { id: 'altriset_200sc_rayap', category: 'SPRAYING_RESIDUAL', name: 'ALTRISET 200 SC (Spraying - Rayap)', unit: 'ml', hasSolvent: true, stdChemical: 2.5, stdSolvent: 1000, stdAreaM2: 1, desc: 'Dosis Standar: Rayap 2.5 ml / Liter larutan.' },
+      { id: 'prestise_200sl_kayu', category: 'SPRAYING_RESIDUAL', name: 'PRESTISE 200 SL (Semprot Kayu/Tanaman - Rayap)', unit: 'ml', hasSolvent: true, stdChemical: 1, stdSolvent: 125, stdAreaM2: 1, desc: 'Dosis Standar: Rayap 0.5 - 2 ml / 125 ml larutan / m².' },
+      { id: 'prestise_200sl_spraying', category: 'SPRAYING_RESIDUAL', name: 'PRESTISE 200 SL (Spraying Tanah/Lantai - Rayap)', unit: 'ml', hasSolvent: true, stdChemical: 10, stdSolvent: 5000, stdAreaM2: 1, desc: 'Dosis Standar: Rayap 10 ml / 5 Liter larutan / m².' },
+      { id: 'fendona_15sc_sp', category: 'SPRAYING_RESIDUAL', name: 'FENDONA 15 SC (Aplikasi Spraying Karung / Residual)', unit: 'ml', hasSolvent: true, stdChemical: 3, stdSolvent: 30, stdAreaM2: 1, desc: 'Dosis Standar: 3 ml FENDONA 15 SC + 30 ml air per 1 m² permukaan karung.' },
+      { id: 'agita_10wg_oles', category: 'GEL_BAITING_TABUR', name: 'Agita 10 WG (Aplikasi Oles / Dicatkan)', unit: 'g', hasSolvent: true, stdChemical: 200, stdSolvent: 130, stdAreaM2: 80, desc: '200 gram AGITA + 130 ml air = 80 m² permukaan lantai.' },
+      { id: 'agita_10wg_semprot', category: 'SPRAYING_RESIDUAL', name: 'Agita 10 WG (Aplikasi Semprot / Disemprotkan)', unit: 'g', hasSolvent: true, stdChemical: 200, stdSolvent: 1300, stdAreaM2: 40, desc: '200 gram AGITA + 1.300 ml air = 40 m² permukaan lantai.' },
+      { id: 'quickbayt_tabur', category: 'GEL_BAITING_TABUR', name: 'Quickbayt 10 WG (Aplikasi Ditaburkan)', unit: 'g', hasSolvent: false, stdChemical: 2, stdSolvent: 0, stdAreaM2: 1, desc: 'Dosis Standar: 2 gram Quickbayt / m² permukaan lantai.' },
+      { id: 'quickbayt_semprot', category: 'SPRAYING_RESIDUAL', name: 'Quickbayt 10 WG (Aplikasi Semprot Residual)', unit: 'g', hasSolvent: true, stdChemical: 62.5, stdSolvent: 600, stdAreaM2: 11.9, desc: '62,5 gram Quickbayt + 600 ml air = 11,9 m².' },
+      { id: 'maxforce_quantum', category: 'GEL_BAITING_TABUR', name: 'MAXFORCE QUANTUM 0.03 RB (Gel Baiting)', unit: 'g', hasSolvent: false, stdChemical: 0.3, stdSolvent: 0, stdAreaM2: 1, desc: 'Dosis Standar: 0,3 gram MAXFORCE QUANTUM / m².' },
+      { id: 'maxforce_forte', category: 'GEL_BAITING_TABUR', name: 'MAXFORCE FORTE 0.05 GEL (Gel Baiting)', unit: 'g', hasSolvent: false, stdChemical: 0.06, stdSolvent: 0, stdAreaM2: 1, desc: 'Dosis Standar: 60 mg (0,06 gram) MAXFORCE FORTE / m².' },
+      { id: 'blattanex_blattella', category: 'GEL_BAITING_TABUR', name: 'BLATTANEX 2.15 GEL (Kecoak Blattella germanica)', unit: 'g', hasSolvent: false, stdChemical: 2.5, stdSolvent: 0, stdAreaM2: 1, desc: 'Dosis Standar Kecoak Jerman: 2,5 gram / m².' },
+      { id: 'blattanex_periplaneta', category: 'GEL_BAITING_TABUR', name: 'BLATTANEX 2.15 GEL (Kecoak Periplaneta)', unit: 'g', hasSolvent: false, stdChemical: 1.5, stdSolvent: 0, stdAreaM2: 1, desc: 'Dosis Standar Kecoak Amerika: 1,5 gram / m².' },
+      { id: 'optigard_blattella', category: 'GEL_BAITING_TABUR', name: 'OPTIGARD COCKROACH 0.1 RB (Blattella)', unit: 'g', hasSolvent: false, stdChemical: 5.0, stdSolvent: 0, stdAreaM2: 1, desc: 'Dosis Standar Kecoak Jerman: 5,0 gram / m².' },
+      { id: 'optigard_periplaneta', category: 'GEL_BAITING_TABUR', name: 'OPTIGARD COCKROACH 0.1 RB (Periplaneta)', unit: 'g', hasSolvent: false, stdChemical: 7.5, stdSolvent: 0, stdAreaM2: 1, desc: 'Dosis Standar Kecoak Amerika: 7,5 gram / m².' },
+      { id: 'smash_tf', category: 'THERMAL_FOGGING', name: 'SMASH (Thermal Fogging / Pengasapan)', unit: 'ml', hasSolvent: true, stdChemical: 50, stdSolvent: 5000, stdAreaM2: 10000, desc: '50 ml SMASH + 5.000 ml Solar/Dexlite = 10.000 m² (1 Hektar).' },
+      { id: 'kothrine_tf', category: 'THERMAL_FOGGING', name: 'K-OTHRINE (Thermal Fogging)', unit: 'ml', hasSolvent: true, stdChemical: 75, stdSolvent: 10000, stdAreaM2: 10000, desc: '75 ml K-OTHRINE + 10.000 ml Pelarut = 10.000 m² (1 Hektar).' },
+      { id: 'silambda_tf', category: 'THERMAL_FOGGING', name: 'SILAMBDA (Thermal Fogging)', unit: 'ml', hasSolvent: true, stdChemical: 3.6, stdSolvent: 1000, stdAreaM2: 2000, desc: '3,6 ml SILAMBDA + 1.000 ml Pelarut = 2.000 m².' },
+      { id: 'silambda_xtra_tf', category: 'THERMAL_FOGGING', name: 'SILAMBDA XTRA (Thermal Fogging)', unit: 'ml', hasSolvent: true, stdChemical: 33, stdSolvent: 1000, stdAreaM2: 33, desc: '33 ml SILAMBDA XTRA + 1.000 ml Pelarut = 33 m².' },
+      { id: 'silambda_xtra_sp', category: 'SPRAYING_RESIDUAL', name: 'SILAMBDA XTRA (Spraying)', unit: 'ml', hasSolvent: true, stdChemical: 1, stdSolvent: 30, stdAreaM2: 1, desc: '1 ml SILAMBDA XTRA + 30 ml Air = 1 m².' },
+      { id: 'jolt_tf', category: 'THERMAL_FOGGING', name: 'JOLT (Thermal Fogging)', unit: 'ml', hasSolvent: true, stdChemical: 50, stdSolvent: 5000, stdAreaM2: 10000, desc: '50 ml JOLT + 5.000 ml Pelarut = 10.000 m² (1 Ha).' },
+      { id: 'jolt_sp', category: 'SPRAYING_RESIDUAL', name: 'JOLT (Aplikasi Spraying)', unit: 'ml', hasSolvent: true, stdChemical: 2.5, stdSolvent: 1000, stdAreaM2: 400, desc: '2,5 ml JOLT + 1.000 ml Air = 400 m².' }
+    ];
+
+    let currentPesticide = DATABASE_PESTICIDES[0];
+    let currentMode = 'AREA';
+    let currentResults = { chemical: 0, solvent: 0, solution: 0, areaM2: 0, areaHa: 0 };
+
+    function filterPesticides() {
+      const cat = document.getElementById('categorySelect').value;
+      const search = document.getElementById('searchInput').value.toLowerCase().trim();
+      const clearBtn = document.getElementById('clearSearchBtn');
+
+      if (search.length > 0) clearBtn.classList.remove('hidden');
+      else clearBtn.classList.add('hidden');
+
+      let filtered = DATABASE_PESTICIDES.filter(p => {
+        const matchCat = (cat === 'ALL' || p.category === cat);
+        const matchSearch = p.name.toLowerCase().includes(search) || p.desc.toLowerCase().includes(search);
+        return matchCat && matchSearch;
+      });
+
+      populatePesticideDropdown(filtered);
+      if (filtered.length > 0) onPesticideChange();
+    }
+
+    function clearSearch() {
+      document.getElementById('searchInput').value = '';
+      filterPesticides();
+    }
+
+    function populatePesticideDropdown(items) {
+      const select = document.getElementById('pesticideSelect');
+      select.innerHTML = '';
+      items.forEach(item => {
+        const opt = document.createElement('option');
+        opt.value = item.id;
+        opt.textContent = item.name;
+        select.appendChild(opt);
+      });
+    }
+
+    function onPesticideChange() {
+      const selectedId = document.getElementById('pesticideSelect').value;
+      currentPesticide = DATABASE_PESTICIDES.find(p => p.id === selectedId) || DATABASE_PESTICIDES[0];
+
+      document.getElementById('stdPesticideName').textContent = currentPesticide.name;
+      document.getElementById('stdDosisDescription').textContent = currentPesticide.desc;
+      document.getElementById('unitChemicalLabel').textContent = currentPesticide.unit === 'ml' ? 'ml' : 'gram';
+      document.getElementById('cardChemUnitTag').textContent = currentPesticide.unit === 'ml' ? 'Mililiter' : 'Gram';
+
+      const ratioText = currentPesticide.hasSolvent ? `1 : ${(currentPesticide.stdSolvent / currentPesticide.stdChemical).toFixed(1)}` : 'Kering / Gel';
+      document.getElementById('stdRatioBadge').textContent = `Rasio: ${ratioText}`;
+      document.getElementById('stdAreaBadge').textContent = `Standar: ${currentPesticide.stdAreaM2} m²`;
+
+      const solventOption = document.getElementById('modeSolventOption');
+      const rowSolvent = document.getElementById('rowTbSolvent');
+      const resSolventCard = document.getElementById('resSolventCard');
+
+      if (!currentPesticide.hasSolvent) {
+        solventOption.classList.add('opacity-40', 'pointer-events-none');
+        if (currentMode === 'SOLVENT') {
+          document.querySelector('input[name="calcMode"][value="AREA"]').checked = true;
+          switchMode('AREA');
+        }
+        rowSolvent.classList.add('hidden');
+        resSolventCard.classList.add('hidden');
+      } else {
+        solventOption.classList.remove('opacity-40', 'pointer-events-none');
+        rowSolvent.classList.remove('hidden');
+        resSolventCard.classList.remove('hidden');
+      }
+
+      recalculateCurrentMode();
+    }
+
+    function switchMode(mode) {
+      currentMode = mode;
+      document.getElementById('inputGroupArea').classList.toggle('hidden', mode !== 'AREA');
+      document.getElementById('inputGroupChemical').classList.toggle('hidden', mode !== 'CHEMICAL');
+      document.getElementById('inputGroupSolvent').classList.toggle('hidden', mode !== 'SOLVENT');
+
+      const tags = {
+        'AREA': 'Mode: Luas Area Target',
+        'CHEMICAL': 'Mode: Stok Chemical Mentah',
+        'SOLVENT': 'Mode: Volume Air/Pelarut'
+      };
+      document.getElementById('calculationMethodTag').textContent = tags[mode];
+      recalculateCurrentMode();
+    }
+
+    function recalculateCurrentMode() {
+      if (currentMode === 'AREA') {
+        const m2 = parseFloat(document.getElementById('inputAreaM2').value) || 0;
+        calculateFromArea('m2', m2);
+      } else if (currentMode === 'CHEMICAL') {
+        calculateFromChemical();
+      } else if (currentMode === 'SOLVENT') {
+        const ml = parseFloat(document.getElementById('inputSolventMl').value) || 0;
+        calculateFromSolvent('ml', ml);
+      }
+    }
+
+    function calculateFromArea(source, val) {
+      let m2 = 0;
+      if (source === 'm2') {
+        m2 = val !== undefined ? val : parseFloat(document.getElementById('inputAreaM2').value) || 0;
+        const ha = m2 / 10000;
+        document.getElementById('inputAreaHa').value = m2 ? ha : '';
+      } else {
+        const ha = val !== undefined ? val : parseFloat(document.getElementById('inputAreaHa').value) || 0;
+        m2 = ha * 10000;
+        document.getElementById('inputAreaM2').value = ha ? m2 : '';
+      }
+
+      const factor = m2 / currentPesticide.stdAreaM2;
+      const chem = currentPesticide.stdChemical * factor;
+      const solv = currentPesticide.hasSolvent ? (currentPesticide.stdSolvent * factor) : 0;
+      updateResultsUI(chem, solv, m2);
+    }
+
+    function calculateFromChemical() {
+      const chem = parseFloat(document.getElementById('inputChemical').value) || 0;
+      const factor = chem / currentPesticide.stdChemical;
+      const m2 = currentPesticide.stdAreaM2 * factor;
+      const solv = currentPesticide.hasSolvent ? (currentPesticide.stdSolvent * factor) : 0;
+
+      document.getElementById('inputAreaM2').value = m2 ? m2.toFixed(2) : '';
+      document.getElementById('inputAreaHa').value = m2 ? (m2 / 10000).toFixed(4) : '';
+      updateResultsUI(chem, solv, m2);
+    }
+
+    function calculateFromSolvent(source, val) {
+      let ml = 0;
+      if (source === 'ml') {
+        ml = val !== undefined ? val : parseFloat(document.getElementById('inputSolventMl').value) || 0;
+        document.getElementById('inputSolventL').value = ml ? (ml / 1000) : '';
+      } else {
+        const l = val !== undefined ? val : parseFloat(document.getElementById('inputSolventL').value) || 0;
+        ml = l * 1000;
+        document.getElementById('inputSolventMl').value = l ? ml : '';
+      }
+
+      if (!currentPesticide.hasSolvent || currentPesticide.stdSolvent === 0) return;
+
+      const factor = ml / currentPesticide.stdSolvent;
+      const chem = currentPesticide.stdChemical * factor;
+      const m2 = currentPesticide.stdAreaM2 * factor;
+
+      document.getElementById('inputAreaM2').value = m2 ? m2.toFixed(2) : '';
+      document.getElementById('inputAreaHa').value = m2 ? (m2 / 10000).toFixed(4) : '';
+      updateResultsUI(chem, ml, m2);
+    }
+
+    function updateResultsUI(chem, solv, m2) {
+      const unit = currentPesticide.unit;
+      const isLiquidChem = unit === 'ml';
+      
+      let chemStr = '';
+      let chemSub = '';
+      if (isLiquidChem) {
+        if (chem >= 1000) {
+          chemStr = `${(chem / 1000).toFixed(2)} L`;
+          chemSub = `(${formatNumber(chem)} ml)`;
+        } else {
+          chemStr = `${formatNumber(chem)} ml`;
+          chemSub = chem > 0 ? `(${(chem / 1000).toFixed(3)} Liter)` : '-';
+        }
+      } else {
+        if (chem >= 1000) {
+          chemStr = `${(chem / 1000).toFixed(2)} kg`;
+          chemSub = `(${formatNumber(chem)} gram)`;
+        } else {
+          chemStr = `${formatNumber(chem)} g`;
+          chemSub = chem > 0 ? `(${(chem / 1000).toFixed(3)} Kg)` : '-';
+        }
+      }
+
+      let solvStr = '0 ml';
+      let solvSub = '-';
+      if (currentPesticide.hasSolvent) {
+        if (solv >= 1000) {
+          solvStr = `${(solv / 1000).toFixed(2)} L`;
+          solvSub = `(${formatNumber(solv)} ml)`;
+        } else {
+          solvStr = `${formatNumber(solv)} ml`;
+          solvSub = solv > 0 ? `(${(solv / 1000).toFixed(3)} Liter)` : '-';
+        }
+      } else {
+        solvStr = 'Tanpa Pelarut';
+        solvSub = 'Aplikasi Gel / Tabur Kering';
+      }
+
+      let solutionVal = 0;
+      let solutionStr = '-';
+      let solutionSub = '-';
+      if (currentPesticide.hasSolvent) {
+        const chemVolumeMl = isLiquidChem ? chem : 0;
+        solutionVal = solv + chemVolumeMl;
+        if (solutionVal >= 1000) {
+          solutionStr = `${(solutionVal / 1000).toFixed(2)} L`;
+          solutionSub = `(${formatNumber(solutionVal)} ml Total Solution)`;
+        } else {
+          solutionStr = `${formatNumber(solutionVal)} ml`;
+          solutionSub = `(${(solutionVal / 1000).toFixed(3)} Liter)`;
+        }
+      } else {
+        solutionStr = chemStr;
+        solutionSub = 'Murni Gel / Ready-to-Use';
+      }
+
+      const ha = m2 / 10000;
+      const areaStr = `${formatNumber(m2)} m²`;
+      const areaSub = `${ha.toFixed(4)} Hektar (Ha)`;
+
+      currentResults = { chemical: chem, solvent: solv, solution: solutionVal, areaM2: m2, areaHa: ha };
+
+      document.getElementById('resChemicalVal').textContent = chemStr;
+      document.getElementById('resChemicalSub').textContent = chemSub;
+      document.getElementById('resSolventVal').textContent = solvStr;
+      document.getElementById('resSolventSub').textContent = solvSub;
+      document.getElementById('resSolutionVal').textContent = solutionStr;
+      document.getElementById('resSolutionSub').textContent = solutionSub;
+      document.getElementById('resAreaVal').textContent = areaStr;
+      document.getElementById('resAreaSub').textContent = areaSub;
+
+      document.getElementById('tbStdChemical').textContent = `${currentPesticide.stdChemical} ${currentPesticide.unit}`;
+      document.getElementById('tbCalcChemical').textContent = `${formatNumber(chem)} ${currentPesticide.unit} (${chemStr})`;
+      document.getElementById('tbStdSolvent').textContent = currentPesticide.hasSolvent ? `${currentPesticide.stdSolvent} ml` : '0 (Kering)';
+      document.getElementById('tbCalcSolvent').textContent =
