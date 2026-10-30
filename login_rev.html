@@ -148,8 +148,10 @@
   </div>
 
   <script>
-    const STORAGE_KEY_USERS = 'rentokil_users_db';
-    const STORAGE_KEY_SESSION = 'rentokil_session';
+    //const STORAGE_KEY_USERS = 'rentokil_users_db';
+    //const STORAGE_KEY_SESSION = 'rentokil_session';
+    const DB_KEY_USERS = 'rentokil_users_db';
+    const DB_KEY_SESSION = 'rentokil_session';
 
     // Inisialisasi Database Akun Pertama Kali dengan Password
     function initUserDatabase() {
@@ -190,48 +192,24 @@
 
     // Handler Verifikasi Login (Email & Password)
     function handleLogin(e) {
-      e.preventDefault();
-      
-      const email = document.getElementById('emailInput').value.trim().toLowerCase();
-      const password = document.getElementById('passwordInput').value;
-      const msgBox = document.getElementById('loginMessage');
-      const btn = document.getElementById('btnLogin');
-
-      btn.disabled = true;
-      btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i><span>Memverifikasi...</span>`;
-
-      setTimeout(() => {
-        const users = JSON.parse(localStorage.getItem(STORAGE_KEY_USERS) || '[]');
+        e.preventDefault();
+        const email = document.getElementById('emailInput').value.trim().toLowerCase();
+        const password = document.getElementById('passwordInput').value;
+        const msgBox = document.getElementById('loginMessage');
         
-        // Cari user berdasarkan email
+        // Ambil database terbaru
+        const users = JSON.parse(localStorage.getItem(DB_KEY_USERS) || '[]');
         const user = users.find(u => u.email.toLowerCase() === email);
-
+      
         if (!user) {
-          msgBox.className = "w-full mb-4 p-3 rounded-xl text-xs font-semibold bg-rose-50 border border-rose-200 text-rose-700 flex items-center gap-2";
-          msgBox.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Alamat email tidak terdaftar dalam whitelist sistem!`;
-          msgBox.classList.remove('hidden');
-          btn.disabled = false;
-          btn.innerHTML = `<i class="fa-solid fa-arrow-right-to-bracket text-emerald-200"></i><span>Verifikasi & Buka Aplikasi</span>`;
+          showError("Alamat email tidak terdaftar dalam whitelist sistem!");
           return;
         }
-
-        // Cek kecocokan password
+      
         if (user.password !== password) {
-          msgBox.className = "w-full mb-4 p-3 rounded-xl text-xs font-semibold bg-rose-50 border border-rose-200 text-rose-700 flex items-center gap-2";
-          msgBox.innerHTML = `<i class="fa-solid fa-circle-xmark"></i> Kata sandi yang Anda masukkan salah!`;
-          msgBox.classList.remove('hidden');
-          btn.disabled = false;
-          btn.innerHTML = `<i class="fa-solid fa-arrow-right-to-bracket text-emerald-200"></i><span>Verifikasi & Buka Aplikasi</span>`;
+          showError("Kata sandi yang Anda masukkan salah!");
           return;
         }
-
-        // Login Berhasil -> Simpan Sesi
-        const sessionData = {
-          email: user.email,
-          name: user.name,
-          role: user.role,
-          loginTime: new Date().toISOString()
-        };
         localStorage.setItem(STORAGE_KEY_SESSION, JSON.stringify(sessionData));
 
         msgBox.className = "w-full mb-4 p-3 rounded-xl text-xs font-semibold bg-emerald-50 border border-emerald-200 text-emerald-700 flex items-center gap-2";
@@ -251,17 +229,20 @@
     }
 
     // Auto-check jika user sudah aktif login
-    (function checkExistingSession() {
-      initUserDatabase();
-      const session = JSON.parse(localStorage.getItem(STORAGE_KEY_SESSION) || 'null');
-      if (session) {
-        if (session.role === 'superadmin') {
-          window.location.href = 'admin_rev.html';
-        } else {
-          window.location.href = 'home.html';
-        }
-      }
-    })();
+  localStorage.setItem(DB_KEY_SESSION, JSON.stringify({
+    email: user.email,
+    name: user.name,
+    role: user.role,
+    loginTime: new Date().toISOString()
+  }));
+
+  // Arahkan ke halaman sesuai peran
+  if (user.role === 'superadmin') {
+    window.location.href = 'admin.html';
+  } else {
+    window.location.href = 'home.html';
+  }
+}
   </script>
 </body>
 </html>
