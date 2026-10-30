@@ -12,30 +12,36 @@
     .font-mono-code { font-family: 'JetBrains Mono', monospace; }
   </style>
 </head>
-<body class="bg-slate-100 min-h-screen text-slate-800">
+<body class="bg-slate-100 min-h-screen text-slate-800 flex flex-col">
 
-  <!-- Navbar Super Admin -->
-  <header class="bg-slate-900 text-white shadow-lg sticky top-0 z-50">
+  <!-- Toast Notifikasi Global -->
+  <div id="toast" class="hidden fixed bottom-5 right-5 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl z-50 flex items-center space-x-3 border border-slate-700 transition-all duration-300">
+    <i class="fa-solid fa-circle-check text-emerald-400 text-lg" id="toastIcon"></i>
+    <span id="toastMsg" class="text-sm font-medium">Pemberitahuan</span>
+  </div>
+
+  <!-- Header / Navbar Super Admin -->
+  <header class="bg-slate-900 text-white shadow-lg sticky top-0 z-40">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex justify-between items-center">
       <div class="flex items-center space-x-3">
-        <div class="bg-amber-500 text-slate-950 p-2.5 rounded-xl font-extrabold flex items-center justify-center shadow">
-          <i class="fa-solid fa-shield-halved text-lg"></i>
+        <div class="bg-amber-500 text-slate-950 p-2 rounded-xl font-extrabold flex items-center justify-center shadow">
+          <i class="fa-solid fa-shield-halved text-xl"></i>
         </div>
         <div>
           <div class="flex items-center gap-2">
-            <h1 class="font-extrabold text-base sm:text-lg tracking-tight">Super Admin Panel</h1>
-            <span class="bg-amber-400/20 text-amber-300 border border-amber-400/40 text-[10px] font-bold px-2 py-0.5 rounded-full">Root Access</span>
+            <h1 class="font-black text-base sm:text-lg tracking-tight">Super Admin Portal</h1>
+            <span class="bg-amber-400/20 text-amber-300 border border-amber-400/40 text-[10px] font-extrabold px-2 py-0.5 rounded-full">User Database CRUD</span>
           </div>
-          <p class="text-[11px] text-slate-400">Whitelist Management & Access Control</p>
+          <p class="text-[11px] text-slate-400">PestiCalc Pro • Manajemen Akun Pengguna Whitelist</p>
         </div>
       </div>
 
-      <div class="flex items-center gap-3">
-        <a href="home.html" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold transition flex items-center gap-1.5 shadow">
-          <i class="fa-solid fa-house"></i>
-          <span class="hidden sm:inline">Buka Home Portal</span>
+      <div class="flex items-center gap-2.5">
+        <a href="home.html" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow">
+          <i class="fa-solid fa-calculator"></i>
+          <span class="hidden sm:inline">Kalkulator Portal</span>
         </a>
-        <button onclick="logoutAdmin()" class="px-3.5 py-2 bg-rose-700 hover:bg-rose-800 text-white rounded-xl text-xs font-semibold transition flex items-center gap-1.5 shadow">
+        <button onclick="logoutAdmin()" class="px-3.5 py-2 bg-rose-700 hover:bg-rose-800 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow">
           <i class="fa-solid fa-arrow-right-from-bracket"></i>
           <span>Logout</span>
         </button>
@@ -43,105 +49,116 @@
     </div>
   </header>
 
-  <!-- Konten Utama Panel Super Admin -->
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-    
-    <!-- Top Stat Banner -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+  <!-- Konten Utama Panel -->
+  <main class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6 flex-grow">
+
+    <!-- Stat Dashboard Cards (READ SUMMARY) -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
       <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
         <div>
-          <span class="text-xs font-semibold text-slate-500">Total Pengguna Terdaftar</span>
-          <h3 id="statTotalUsers" class="text-2xl font-black text-slate-800 mt-0.5">0</h3>
+          <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Akun</span>
+          <h3 id="statTotalUsers" class="text-2xl font-black text-slate-900 mt-0.5">0</h3>
         </div>
-        <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-xl">
+        <div class="w-11 h-11 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-lg shadow-inner">
           <i class="fa-solid fa-users"></i>
         </div>
       </div>
 
       <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
         <div>
-          <span class="text-xs font-semibold text-slate-500">Super Administrator</span>
+          <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Super Administrator</span>
           <h3 id="statAdmins" class="text-2xl font-black text-amber-600 mt-0.5">0</h3>
         </div>
-        <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center text-xl">
+        <div class="w-11 h-11 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center text-lg shadow-inner">
           <i class="fa-solid fa-user-shield"></i>
         </div>
       </div>
 
       <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
         <div>
-          <span class="text-xs font-semibold text-slate-500">Teknisi & Staf Operasional</span>
+          <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Teknisi / Staf</span>
           <h3 id="statStaff" class="text-2xl font-black text-emerald-600 mt-0.5">0</h3>
         </div>
-        <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-xl">
+        <div class="w-11 h-11 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-lg shadow-inner">
           <i class="fa-solid fa-user-check"></i>
         </div>
       </div>
+
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+        <div>
+          <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Database Engine</span>
+          <h3 class="text-sm font-black text-slate-800 mt-1 flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse"></span>
+            <span>LocalStorage CRUD</span>
+          </h3>
+        </div>
+        <button onclick="exportDatabaseJSON()" title="Ekspor Data JSON" class="p-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition">
+          <i class="fa-solid fa-download"></i>
+        </button>
+      </div>
     </div>
 
-    <!-- Layout 2 Kolom: Form Tambah Pengguna & Tabel Daftar Akun -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-      
-      <!-- Kolom Kiri: Form Tambah Akun Baru (Lengkap dengan Input Password) -->
-      <div class="lg:col-span-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-        <h2 class="font-bold text-slate-800 text-sm uppercase tracking-wider mb-4 flex items-center gap-2 border-b border-slate-100 pb-3">
+    <!-- Grid CRUD Interface -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+      <!-- CREATE SECTION: Form Tambah Akun Baru -->
+      <div class="lg:col-span-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+        <h2 class="font-extrabold text-slate-800 text-sm uppercase tracking-wider flex items-center gap-2 pb-3 border-b border-slate-100">
           <i class="fa-solid fa-user-plus text-emerald-600"></i>
-          <span>Tambah Akun Baru</span>
+          <span>Create (Tambah Akun Baru)</span>
         </h2>
 
-        <form id="addUserForm" onsubmit="handleAddUser(event)" class="space-y-4">
+        <form id="createUserForm" onsubmit="handleCreateUser(event)" class="space-y-4">
           <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1">Nama Lengkap Pengguna</label>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Nama Pengguna</label>
             <input 
               type="text" 
-              id="newUserName" 
+              id="cName" 
               required 
               placeholder="Contoh: Budi Santoso" 
-              class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm text-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none"
+              class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm text-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none font-medium"
             >
           </div>
 
           <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1">Email Perusahaan</label>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Alamat Email (@rentokil-initial.com)</label>
             <input 
               type="email" 
-              id="newUserEmail" 
+              id="cEmail" 
               required 
               placeholder="nama@rentokil-initial.com" 
               class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm text-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none font-mono-code"
             >
           </div>
 
-          <!-- Fitur Input Password Baru -->
           <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1">Kata Sandi / Password Akun</label>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Kata Sandi / Password</label>
             <div class="relative">
               <input 
                 type="password" 
-                id="newUserPassword" 
+                id="cPassword" 
                 required 
-                placeholder="Minimal 6 karakter" 
+                placeholder="Minimal 4 karakter" 
                 class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm text-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none pr-10"
               >
               <button 
                 type="button" 
-                onclick="toggleNewUserPassword()" 
-                class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600"
+                onclick="togglePasswordInput('cPassword', 'iconToggleCPass')" 
+                class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600"
               >
-                <i class="fa-regular fa-eye" id="toggleNewUserIcon"></i>
+                <i class="fa-regular fa-eye" id="iconToggleCPass"></i>
               </button>
             </div>
-            <p class="text-[10px] text-slate-400 mt-1">Gunakan kombinasi yang aman untuk akun operasional.</p>
           </div>
 
           <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1">Peran Akses (Role)</label>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Role / Hak Akses</label>
             <select 
-              id="newUserRole" 
+              id="cRole" 
               class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm text-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none font-semibold"
             >
-              <option value="staff">User Teknisi / Staf (Hanya Akses Portal Home)</option>
-              <option value="superadmin">Super Administrator (Akses Penuh + Panel Admin)</option>
+              <option value="staff">User Teknisi / Staf (Akses Home)</option>
+              <option value="superadmin">Super Administrator (Akses Penuh)</option>
             </select>
           </div>
 
@@ -150,223 +167,231 @@
             class="w-full py-3 bg-[#009b5a] hover:bg-[#00824b] text-white font-bold rounded-xl text-xs sm:text-sm transition shadow flex items-center justify-center gap-2"
           >
             <i class="fa-solid fa-plus"></i>
-            <span>Daftarkan Akun ke Whitelist</span>
+            <span>Simpan ke Database</span>
           </button>
         </form>
+
+        <div class="pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
+          <span>Otomatis sinkron dengan login</span>
+          <button onclick="factoryResetDatabase()" class="text-rose-600 hover:underline font-bold">Reset Demo</button>
+        </div>
       </div>
 
-      <!-- Kolom Kanan: Tabel Whitelist User & Manajemen Akun -->
+      <!-- READ & LIST SECTION: Tabel Database User -->
       <div class="lg:col-span-8 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
         
         <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-100 gap-3">
-          <h2 class="font-bold text-slate-800 text-sm uppercase tracking-wider flex items-center gap-2">
-            <i class="fa-solid fa-table-list text-emerald-600"></i>
-            <span>Daftar Akun Whitelist Terverifikasi</span>
+          <h2 class="font-extrabold text-slate-800 text-sm uppercase tracking-wider flex items-center gap-2">
+            <i class="fa-solid fa-database text-emerald-600"></i>
+            <span>Read (Daftar Akun Terdaftar)</span>
           </h2>
-          <div class="relative">
+
+          <div class="relative w-full sm:w-64">
             <input 
               type="text" 
-              id="searchUserInput" 
-              oninput="renderUserTable()" 
-              placeholder="Cari email / nama..." 
-              class="pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs outline-none focus:ring-2 focus:ring-emerald-500"
+              id="searchKeyword" 
+              oninput="renderDatabaseUsers()" 
+              placeholder="Cari nama atau email..." 
+              class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs outline-none focus:ring-2 focus:ring-emerald-500"
             >
-            <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-2.5 text-slate-400 text-xs"></i>
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
           </div>
         </div>
 
-        <!-- Tabel Akun -->
+        <!-- Tabel Render Akun -->
         <div class="overflow-x-auto rounded-xl border border-slate-200">
           <table class="w-full text-left text-xs">
-            <thead class="bg-slate-50 text-slate-600 font-bold uppercase tracking-wider border-b border-slate-200">
+            <thead class="bg-slate-50 text-slate-600 font-extrabold uppercase tracking-wider border-b border-slate-200">
               <tr>
-                <th class="p-3">Nama & Email</th>
+                <th class="p-3">Pengguna</th>
                 <th class="p-3">Role</th>
                 <th class="p-3">Password</th>
-                <th class="p-3 text-center">Aksi</th>
+                <th class="p-3 text-center">Aksi (Update / Delete)</th>
               </tr>
             </thead>
             <tbody id="userTableBody" class="divide-y divide-slate-100 font-medium text-slate-700">
-              <!-- Baris user dirender dinamis via JavaScript -->
+              <!-- Baris hasil render javascript -->
             </tbody>
           </table>
         </div>
 
       </div>
+
     </div>
   </main>
 
-  <!-- Modal Ubah Password -->
-  <div id="changePasswordModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl border border-slate-200 space-y-4">
-      <div class="flex items-center justify-between border-b pb-2">
-        <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
-          <i class="fa-solid fa-key text-amber-500"></i>
-          <span>Ubah Password Akun</span>
+  <!-- MODAL UPDATE 1: EDIT PROFIL AKUN (Nama & Role) -->
+  <div id="modalEditUser" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="max-w-md w-full bg-white rounded-2xl shadow-2xl border border-slate-200 p-6 space-y-4">
+      <div class="flex items-center justify-between border-b pb-3">
+        <h3 class="font-extrabold text-slate-900 text-sm flex items-center gap-2">
+          <i class="fa-solid fa-user-pen text-emerald-600"></i>
+          <span>Update Data Pengguna</span>
         </h3>
-        <button onclick="closePasswordModal()" class="text-slate-400 hover:text-slate-600">
-          <i class="fa-solid fa-xmark text-sm"></i>
+        <button onclick="closeEditModal()" class="text-slate-400 hover:text-slate-600">
+          <i class="fa-solid fa-xmark text-lg"></i>
         </button>
       </div>
 
-      <div>
-        <p class="text-[11px] text-slate-500">Mengubah kata sandi untuk akun:</p>
-        <p id="modalUserEmail" class="font-mono-code font-bold text-xs text-emerald-700"></p>
-      </div>
+      <form id="editUserForm" onsubmit="handleSaveEditUser(event)" class="space-y-3">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Email (Kunci Identitas)</label>
+          <input 
+            type="text" 
+            id="editEmail" 
+            disabled 
+            class="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl text-xs font-mono-code text-slate-500 cursor-not-allowed"
+          >
+        </div>
 
-      <div>
-        <label class="block text-xs font-bold text-slate-700 mb-1">Password Baru</label>
-        <input 
-          type="text" 
-          id="modalNewPassword" 
-          placeholder="Masukkan password baru" 
-          class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono outline-none focus:ring-2 focus:ring-emerald-500"
-        >
-      </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Nama Lengkap</label>
+          <input 
+            type="text" 
+            id="editName" 
+            required 
+            class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs outline-none focus:ring-2 focus:ring-emerald-500"
+          >
+        </div>
 
-      <div class="flex gap-2 pt-2">
-        <button onclick="closePasswordModal()" class="flex-1 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-semibold">
-          Batal
-        </button>
-        <button onclick="saveNewPassword()" class="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold shadow">
-          Simpan Password
-        </button>
-      </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Peran Akses (Role)</label>
+          <select 
+            id="editRole" 
+            class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs outline-none focus:ring-2 focus:ring-emerald-500 font-semibold"
+          >
+            <option value="staff">User Teknisi / Staf</option>
+            <option value="superadmin">Super Administrator</option>
+          </select>
+        </div>
+
+        <div class="pt-3 flex gap-2">
+          <button type="button" onclick="closeEditModal()" class="flex-1 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-bold">
+            Batal
+          </button>
+          <button type="submit" class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow">
+            Simpan Perubahan
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 
+  <!-- MODAL UPDATE 2: UBAH PASSWORD AKUN -->
+  <div id="modalPasswordUser" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="max-w-sm w-full bg-white rounded-2xl shadow-2xl border border-slate-200 p-6 space-y-4">
+      <div class="flex items-center justify-between border-b pb-3">
+        <h3 class="font-extrabold text-slate-900 text-sm flex items-center gap-2">
+          <i class="fa-solid fa-key text-amber-500"></i>
+          <span>Update Kata Sandi</span>
+        </h3>
+        <button onclick="closePasswordModal()" class="text-slate-400 hover:text-slate-600">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <form id="editPasswordForm" onsubmit="handleSaveNewPassword(event)" class="space-y-3">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Akun Terpilih</label>
+          <input 
+            type="text" 
+            id="pwdEmail" 
+            disabled 
+            class="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl text-xs font-mono-code text-slate-500 cursor-not-allowed"
+          >
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Kata Sandi Baru</label>
+          <input 
+            type="text" 
+            id="pwdNewVal" 
+            required 
+            placeholder="Ketik password baru..." 
+            class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono outline-none focus:ring-2 focus:ring-emerald-500"
+          >
+        </div>
+
+        <div class="pt-3 flex gap-2">
+          <button type="button" onclick="closePasswordModal()" class="flex-1 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-bold">
+            Batal
+          </button>
+          <button type="submit" class="flex-1 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 rounded-xl text-xs font-bold shadow">
+            Update Password
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- SCRIPT DATABASE LOGIC (CRUD) -->
   <script>
-    const STORAGE_KEY_USERS = 'rentokil_users_db';
-    const STORAGE_KEY_SESSION = 'rentokil_session';
-    let targetEmailForPasswordChange = null;
+    const DB_KEY_USERS = 'rentokil_users_db';
+    const DB_KEY_SESSION = 'rentokil_session';
 
-    // Verifikasi Keamanan Sesi Super Admin
-    function verifySuperAdminSession() {
-      const session = JSON.parse(localStorage.getItem(STORAGE_KEY_SESSION) || 'null');
-      if (!session) {
-        alert('Akses ditolak! Silakan login terlebih dahulu.');
-        window.location.href = 'login_rev.html';
-        return null;
-      }
-
-      // Hanya email dengan role superadmin yang diizinkan
-      if (session.role !== 'superadmin') {
-        alert('Peringatan: Anda tidak memiliki wewenang Super Admin untuk mengakses halaman ini!');
-        window.location.href = 'home.html';
-        return null;
-      }
-      return session;
-    }
-
-    // Toggle Password Visibility di Form Tambah Akun
-    function toggleNewUserPassword() {
-      const input = document.getElementById('newUserPassword');
-      const icon = document.getElementById('toggleNewUserIcon');
-      if (input.type === 'password') {
-        input.type = 'text';
-        icon.className = 'fa-regular fa-eye-slash';
-      } else {
-        input.type = 'password';
-        icon.className = 'fa-regular fa-eye';
+    // 1. DATABASE ENGINE: INIT & CORE FUNCTIONS
+    function initDatabase() {
+      const existing = localStorage.getItem(DB_KEY_USERS);
+      if (!existing) {
+        const defaultUsers = [
+          {
+            email: 'admin@rentokil-initial.com',
+            password: 'admin123',
+            name: 'Super Admin Utama',
+            role: 'superadmin',
+            createdAt: new Date().toISOString()
+          },
+          {
+            email: 'teknisi@rentokil-initial.com',
+            password: 'user123',
+            name: 'Teknisi Operasional 01',
+            role: 'staff',
+            createdAt: new Date().toISOString()
+          }
+        ];
+        localStorage.setItem(DB_KEY_USERS, JSON.stringify(defaultUsers));
       }
     }
 
-    // Mengambil data pengguna dari LocalStorage
-    function getUsers() {
-      return JSON.parse(localStorage.getItem(STORAGE_KEY_USERS) || '[]');
-    }
-
-    // Menyimpan data pengguna ke LocalStorage
-    function saveUsers(users) {
-      localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(users));
-      renderUserTable();
-      updateStats();
-    }
-
-    // Update Statistik
-    function updateStats() {
-      const users = getUsers();
-      document.getElementById('statTotalUsers').textContent = users.length;
-      document.getElementById('statAdmins').textContent = users.filter(u => u.role === 'superadmin').length;
-      document.getElementById('statStaff').textContent = users.filter(u => u.role === 'staff').length;
-    }
-
-    // Render Tabel Daftar Pengguna
-    function renderUserTable() {
-      const users = getUsers();
-      const query = (document.getElementById('searchUserInput').value || '').toLowerCase().trim();
-      const tbody = document.getElementById('userTableBody');
-      tbody.innerHTML = '';
-
-      const filtered = users.filter(u => 
-        u.name.toLowerCase().includes(query) || u.email.toLowerCase().includes(query)
-      );
-
-      if (filtered.length === 0) {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="4" class="p-6 text-center text-slate-400">
-              Tidak ada data akun yang sesuai dengan pencarian.
-            </td>
-          </tr>
-        `;
-        return;
+    // READ: Ambil seluruh data pengguna
+    function dbGetAllUsers() {
+      try {
+        const raw = localStorage.getItem(DB_KEY_USERS);
+        return raw ? JSON.parse(raw) : [];
+      } catch (e) {
+        console.error("Gagal membaca database", e);
+        return [];
       }
-
-      filtered.forEach(u => {
-        const isProtectedRoot = u.email === 'admin@rentokil-initial.com';
-        const roleBadge = u.role === 'superadmin' 
-          ? `<span class="bg-amber-100 text-amber-800 font-bold px-2.5 py-0.5 rounded-full text-[10px] border border-amber-200">Super Admin</span>`
-          : `<span class="bg-emerald-100 text-emerald-800 font-bold px-2.5 py-0.5 rounded-full text-[10px] border border-emerald-200">User Staff</span>`;
-
-        const tr = document.createElement('tr');
-        tr.className = "hover:bg-slate-50/80 transition";
-        tr.innerHTML = `
-          <td class="p-3">
-            <div class="font-bold text-slate-800">${u.name}</div>
-            <div class="font-mono-code text-[11px] text-slate-500">${u.email}</div>
-          </td>
-          <td class="p-3">
-            ${roleBadge}
-          </td>
-          <td class="p-3">
-            <div class="flex items-center gap-2">
-              <span class="font-mono text-slate-500 font-medium">••••••••</span>
-              <button onclick="openPasswordModal('${u.email}')" title="Ubah kata sandi" class="text-xs text-amber-600 hover:text-amber-800 underline font-semibold flex items-center gap-1">
-                <i class="fa-solid fa-pen-to-square"></i> Ganti
-              </button>
-            </div>
-          </td>
-          <td class="p-3 text-center">
-            ${
-              isProtectedRoot 
-              ? `<span class="text-[10px] bg-slate-100 text-slate-400 px-2 py-1 rounded font-bold">Protected Root</span>` 
-              : `<button onclick="handleDeleteUser('${u.email}')" class="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg text-xs font-semibold transition flex items-center gap-1 mx-auto">
-                  <i class="fa-solid fa-trash-can"></i> Hapus
-                 </button>`
-            }
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
     }
 
-    // Tambah Akun Baru
-    function handleAddUser(e) {
+    // SIMPAN: Tulis balik data ke database
+    function dbSaveUsers(users) {
+      localStorage.setItem(DB_KEY_USERS, JSON.stringify(users));
+      renderDatabaseUsers();
+      updateDashboardStats();
+    }
+
+    // 2. CREATE (Tambah Pengguna)
+    function handleCreateUser(e) {
       e.preventDefault();
-      const name = document.getElementById('newUserName').value.trim();
-      const email = document.getElementById('newUserEmail').value.trim().toLowerCase();
-      const password = document.getElementById('newUserPassword').value;
-      const role = document.getElementById('newUserRole').value;
+      const name = document.getElementById('cName').value.trim();
+      const email = document.getElementById('cEmail').value.trim().toLowerCase();
+      const password = document.getElementById('cPassword').value;
+      const role = document.getElementById('cRole').value;
 
-      if (!name || !email || !password) {
-        alert('Mohon isi semua field formulir!');
+      if (!email.endsWith('@rentokil-initial.com') || email === '@rentokil-initial.com') {
+        showToast('Email wajib menggunakan domain @rentokil-initial.com!', 'error');
         return;
       }
 
-      const users = getUsers();
+      if (password.length < 4) {
+        showToast('Password minimal 4 karakter!', 'error');
+        return;
+      }
+
+      const users = dbGetAllUsers();
       if (users.some(u => u.email.toLowerCase() === email)) {
-        alert(`Email "${email}" sudah terdaftar dalam sistem!`);
+        showToast(`Email ${email} sudah terdaftar di database!`, 'error');
         return;
       }
 
@@ -378,62 +403,239 @@
         createdAt: new Date().toISOString()
       });
 
-      saveUsers(users);
-      document.getElementById('addUserForm').reset();
-      alert(`Akun untuk "${email}" berhasil ditambahkan!`);
+      dbSaveUsers(users);
+      document.getElementById('createUserForm').reset();
+      showToast(`Pengguna "${name}" berhasil ditambahkan.`);
     }
 
-    // Hapus Akun
-    function handleDeleteUser(email) {
-      if (confirm(`Apakah Anda yakin ingin menghapus akun ${email} dari whitelist sistem?`)) {
-        let users = getUsers();
-        users = users.filter(u => u.email !== email);
-        saveUsers(users);
-      }
-    }
+    // 3. READ (Tampilkan Data ke Tabel & Statistik)
+    function renderDatabaseUsers() {
+      const users = dbGetAllUsers();
+      const keyword = (document.getElementById('searchKeyword').value || '').toLowerCase().trim();
+      const tbody = document.getElementById('userTableBody');
+      tbody.innerHTML = '';
 
-    // Modal Ubah Password
-    function openPasswordModal(email) {
-      targetEmailForPasswordChange = email;
-      document.getElementById('modalUserEmail').textContent = email;
-      document.getElementById('modalNewPassword').value = '';
-      document.getElementById('changePasswordModal').classList.remove('hidden');
-    }
+      const filtered = users.filter(u => 
+        (u.name || '').toLowerCase().includes(keyword) || 
+        (u.email || '').toLowerCase().includes(keyword)
+      );
 
-    function closePasswordModal() {
-      targetEmailForPasswordChange = null;
-      document.getElementById('changePasswordModal').classList.add('hidden');
-    }
-
-    function saveNewPassword() {
-      const newPwd = document.getElementById('modalNewPassword').value;
-      if (!newPwd || newPwd.trim().length < 4) {
-        alert('Password baru minimal 4 karakter!');
+      if (filtered.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="4" class="p-6 text-center text-slate-400">
+              Tidak ada data akun yang cocok dengan pencarian "${keyword}".
+            </td>
+          </tr>
+        `;
         return;
       }
 
-      const users = getUsers();
-      const user = users.find(u => u.email === targetEmailForPasswordChange);
+      filtered.forEach(u => {
+        const isRootAdmin = u.email === 'admin@rentokil-initial.com';
+        const roleBadge = u.role === 'superadmin' 
+          ? `<span class="bg-amber-100 text-amber-800 font-extrabold px-2.5 py-0.5 rounded-full text-[10px] border border-amber-200">Super Admin</span>`
+          : `<span class="bg-emerald-100 text-emerald-800 font-extrabold px-2.5 py-0.5 rounded-full text-[10px] border border-emerald-200">User Staff</span>`;
+
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50/80 transition";
+        tr.innerHTML = `
+          <td class="p-3">
+            <div class="font-bold text-slate-900">${u.name}</div>
+            <div class="font-mono-code text-[11px] text-slate-500">${u.email}</div>
+          </td>
+          <td class="p-3">
+            ${roleBadge}
+          </td>
+          <td class="p-3">
+            <div class="flex items-center gap-2">
+              <span class="font-mono text-slate-400">••••••••</span>
+              <button onclick="openPasswordModal('${u.email}')" title="Ganti Password" class="text-xs text-amber-600 hover:text-amber-800 font-bold underline flex items-center gap-1">
+                <i class="fa-solid fa-key"></i> Ganti
+              </button>
+            </div>
+          </td>
+          <td class="p-3 text-center">
+            <div class="flex items-center justify-center gap-1.5">
+              <button onclick="openEditModal('${u.email}')" title="Edit Profil" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition flex items-center gap-1">
+                <i class="fa-solid fa-pen"></i> Edit
+              </button>
+              ${
+                isRootAdmin 
+                ? `<span class="text-[10px] bg-slate-100 text-slate-400 px-2 py-1 rounded font-bold">Protected</span>` 
+                : `<button onclick="handleDeleteUser('${u.email}')" title="Hapus Akun" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg text-xs font-semibold transition flex items-center gap-1">
+                    <i class="fa-solid fa-trash-can"></i> Hapus
+                   </button>`
+              }
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function updateDashboardStats() {
+      const users = dbGetAllUsers();
+      document.getElementById('statTotalUsers').textContent = users.length;
+      document.getElementById('statAdmins').textContent = users.filter(u => u.role === 'superadmin').length;
+      document.getElementById('statStaff').textContent = users.filter(u => u.role === 'staff').length;
+    }
+
+    // 4. UPDATE (Ubah Data User & Password)
+    function openEditModal(email) {
+      const users = dbGetAllUsers();
+      const user = users.find(u => u.email === email);
+      if (!user) return;
+
+      document.getElementById('editEmail').value = user.email;
+      document.getElementById('editName').value = user.name;
+      document.getElementById('editRole').value = user.role;
+      document.getElementById('modalEditUser').classList.remove('hidden');
+    }
+
+    function closeEditModal() {
+      document.getElementById('modalEditUser').classList.add('hidden');
+    }
+
+    function handleSaveEditUser(e) {
+      e.preventDefault();
+      const email = document.getElementById('editEmail').value;
+      const name = document.getElementById('editName').value.trim();
+      const role = document.getElementById('editRole').value;
+
+      const users = dbGetAllUsers();
+      const user = users.find(u => u.email === email);
       if (user) {
-        user.password = newPwd;
-        saveUsers(users);
-        alert(`Password untuk ${targetEmailForPasswordChange} berhasil diperbarui!`);
-        closePasswordModal();
+        user.name = name;
+        user.role = role;
+        dbSaveUsers(users);
+        closeEditModal();
+        showToast(`Profil ${email} berhasil diperbarui.`);
       }
     }
 
-    // Logout Super Admin
+    function openPasswordModal(email) {
+      document.getElementById('pwdEmail').value = email;
+      document.getElementById('pwdNewVal').value = '';
+      document.getElementById('modalPasswordUser').classList.remove('hidden');
+    }
+
+    function closePasswordModal() {
+      document.getElementById('modalPasswordUser').classList.add('hidden');
+    }
+
+    function handleSaveNewPassword(e) {
+      e.preventDefault();
+      const email = document.getElementById('pwdEmail').value;
+      const newPwd = document.getElementById('pwdNewVal').value;
+
+      if (!newPwd || newPwd.trim().length < 4) {
+        showToast('Kata sandi baru minimal 4 karakter!', 'error');
+        return;
+      }
+
+      const users = dbGetAllUsers();
+      const user = users.find(u => u.email === email);
+      if (user) {
+        user.password = newPwd;
+        dbSaveUsers(users);
+        closePasswordModal();
+        showToast(`Kata sandi untuk ${email} berhasil diubah.`);
+      }
+    }
+
+    // 5. DELETE (Hapus User)
+    function handleDeleteUser(email) {
+      if (email === 'admin@rentokil-initial.com') {
+        showToast('Super Admin utama tidak dapat dihapus!', 'error');
+        return;
+      }
+
+      if (confirm(`Apakah Anda yakin ingin menghapus akun "${email}" dari database?`)) {
+        let users = dbGetAllUsers();
+        users = users.filter(u => u.email !== email);
+        dbSaveUsers(users);
+        showToast(`Akun "${email}" telah dihapus.`);
+      }
+    }
+
+    // UTILITAS & KEAMANAN SESI
+    function verifySuperAdmin() {
+      initDatabase();
+      const session = JSON.parse(localStorage.getItem(DB_KEY_SESSION) || 'null');
+      if (!session) {
+        alert('Akses Ditolak: Silakan login terlebih dahulu!');
+        window.location.href = 'login_rev.html';
+        return;
+      }
+
+      if (session.role !== 'superadmin') {
+        alert('Peringatan Keamanan: Anda tidak memiliki wewenang Super Admin!');
+        window.location.href = 'home.html';
+      }
+    }
+
     function logoutAdmin() {
-      if (confirm('Keluar dari Panel Super Admin?')) {
-        localStorage.removeItem(STORAGE_KEY_SESSION);
+      if (confirm('Keluar dari sesi Super Admin?')) {
+        localStorage.removeItem(DB_KEY_SESSION);
         window.location.href = 'login_rev.html';
       }
     }
 
-    // Jalankan verifikasi & render saat halaman dimuat
-    verifySuperAdminSession();
-    renderUserTable();
-    updateStats();
+    function togglePasswordInput(inputId, iconId) {
+      const input = document.getElementById(inputId);
+      const icon = document.getElementById(iconId);
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'fa-regular fa-eye-slash';
+      } else {
+        input.type = 'password';
+        icon.className = 'fa-regular fa-eye';
+      }
+    }
+
+    function exportDatabaseJSON() {
+      const users = dbGetAllUsers();
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(users, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `rentokil_users_db_backup_${new Date().toISOString().slice(0,10)}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+      showToast('Cadangan file database (JSON) berhasil diunduh.');
+    }
+
+    function factoryResetDatabase() {
+      if (confirm('Perhatian: Anda akan mereset database ke akun demo bawaan. Lanjutkan?')) {
+        localStorage.removeItem(DB_KEY_USERS);
+        initDatabase();
+        renderDatabaseUsers();
+        updateDashboardStats();
+        showToast('Database berhasil direset ke setelan awal pabrik.');
+      }
+    }
+
+    function showToast(msg, type = 'success') {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toastMsg');
+      const toastIcon = document.getElementById('toastIcon');
+
+      toastMsg.textContent = msg;
+      if (type === 'error') {
+        toastIcon.className = 'fa-solid fa-circle-exclamation text-rose-400 text-lg';
+      } else {
+        toastIcon.className = 'fa-solid fa-circle-check text-emerald-400 text-lg';
+      }
+
+      toast.classList.remove('hidden');
+      setTimeout(() => { toast.classList.add('hidden'); }, 3000);
+    }
+
+    // Run Initial Verification
+    verifySuperAdmin();
+    renderDatabaseUsers();
+    updateDashboardStats();
   </script>
 </body>
 </html>
